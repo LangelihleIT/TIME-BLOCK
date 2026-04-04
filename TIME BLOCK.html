@@ -1,0 +1,2143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>TimeBlock — Day Architect</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Syne:wght@700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --deep-work: #2ec4b6;
+        --exercise: #ff6b6b;
+        --admin: #ffe66d;
+        --rest: #a78bfa;
+        --family: #f97316;
+        --nature: #4ade80;
+        --bg: #0f1117;
+        --surface: #1a1d27;
+        --surface2: #22263a;
+        --border: #2e3350;
+        --text: #f0f2ff;
+        --text-dim: #7b82aa;
+        --accent: #6c63ff;
+        --radius: 16px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Nunito", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ── NAV ── */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: rgba(15, 17, 23, 0.92);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        height: 60px;
+      }
+      .nav-logo {
+        font-family: "Syne", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.5px;
+      }
+      .nav-logo span {
+        color: var(--accent);
+      }
+      .nav-tabs {
+        display: flex;
+        gap: 4px;
+      }
+      .nav-tab {
+        background: none;
+        border: none;
+        color: var(--text-dim);
+        font-family: "Nunito", sans-serif;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+      }
+      .nav-tab.active {
+        background: var(--accent);
+        color: #fff;
+      }
+      .nav-tab:hover:not(.active) {
+        background: var(--surface2);
+        color: var(--text);
+      }
+
+      /* ── PAGES ── */
+      .page {
+        display: none;
+        padding-top: 70px;
+        min-height: 100vh;
+      }
+      .page.active {
+        display: block;
+      }
+
+      /* ── TODAY PAGE ── */
+      .today-header {
+        padding: 20px 20px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .today-title {
+        font-family: "Syne", sans-serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+      }
+      .day-type-pills {
+        display: flex;
+        gap: 8px;
+      }
+      .day-pill {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 800;
+        border: 2px solid var(--border);
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--surface2);
+        color: var(--text-dim);
+      }
+      .day-pill.work.active {
+        background: var(--deep-work);
+        border-color: var(--deep-work);
+        color: #0a1a1a;
+      }
+      .day-pill.home.active {
+        background: var(--nature);
+        border-color: var(--nature);
+        color: #0a1a1a;
+      }
+
+      .score-bar {
+        margin: 16px 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .score-label {
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .score-goals {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .score-goal {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 20px;
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .score-goal.done {
+        background: rgba(74, 222, 128, 0.15);
+        border-color: var(--nature);
+        color: var(--nature);
+      }
+      .score-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+      .score-num {
+        margin-left: auto;
+        font-family: "Syne", sans-serif;
+        font-size: 1.5rem;
+        font-weight: 800;
+      }
+      .score-num span {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-dim);
+      }
+
+      /* Timeline */
+      .timeline-wrap {
+        padding: 0 20px 100px;
+      }
+      .timeline {
+        position: relative;
+      }
+      .timeline::before {
+        content: "";
+        position: absolute;
+        left: 54px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--accent), transparent);
+        opacity: 0.3;
+      }
+      .time-block {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 10px;
+        position: relative;
+        align-items: flex-start;
+        animation: slideIn 0.3s ease;
+      }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .time-label {
+        width: 50px;
+        min-width: 50px;
+        text-align: right;
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: var(--text-dim);
+        padding-top: 16px;
+        line-height: 1.2;
+      }
+      .time-dot {
+        width: 10px;
+        min-width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--accent);
+        margin-top: 19px;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 0 0 3px var(--bg);
+      }
+      .block-card {
+        flex: 1;
+        border-radius: 12px;
+        padding: 12px 14px;
+        border: 1.5px solid transparent;
+        position: relative;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s;
+        min-height: 56px;
+      }
+      .block-card:hover {
+        transform: translateX(3px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+      .block-top {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .block-cat-badge {
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .block-title {
+        font-size: 0.9rem;
+        font-weight: 800;
+      }
+      .block-dur {
+        margin-left: auto;
+        font-size: 0.7rem;
+        color: var(--text-dim);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .block-notes {
+        font-size: 0.78rem;
+        color: var(--text-dim);
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+      .block-delete {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(255, 107, 107, 0.15);
+        border: none;
+        color: var(--exercise);
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        font-size: 0.8rem;
+        cursor: pointer;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        transition: background 0.2s;
+      }
+      .block-card:hover .block-delete {
+        display: flex;
+      }
+      .block-delete:hover {
+        background: rgba(255, 107, 107, 0.35);
+      }
+
+      /* Category colors */
+      .cat-deep {
+        background: rgba(46, 196, 182, 0.12);
+        border-color: rgba(46, 196, 182, 0.3);
+      }
+      .cat-deep .block-cat-badge {
+        background: rgba(46, 196, 182, 0.2);
+        color: var(--deep-work);
+      }
+      .cat-exercise {
+        background: rgba(255, 107, 107, 0.12);
+        border-color: rgba(255, 107, 107, 0.3);
+      }
+      .cat-exercise .block-cat-badge {
+        background: rgba(255, 107, 107, 0.2);
+        color: var(--exercise);
+      }
+      .cat-admin {
+        background: rgba(255, 230, 109, 0.1);
+        border-color: rgba(255, 230, 109, 0.25);
+      }
+      .cat-admin .block-cat-badge {
+        background: rgba(255, 230, 109, 0.2);
+        color: var(--admin);
+      }
+      .cat-rest {
+        background: rgba(167, 139, 250, 0.12);
+        border-color: rgba(167, 139, 250, 0.3);
+      }
+      .cat-rest .block-cat-badge {
+        background: rgba(167, 139, 250, 0.2);
+        color: var(--rest);
+      }
+      .cat-family {
+        background: rgba(249, 115, 22, 0.12);
+        border-color: rgba(249, 115, 22, 0.3);
+      }
+      .cat-family .block-cat-badge {
+        background: rgba(249, 115, 22, 0.2);
+        color: var(--family);
+      }
+      .cat-nature {
+        background: rgba(74, 222, 128, 0.1);
+        border-color: rgba(74, 222, 128, 0.25);
+      }
+      .cat-nature .block-cat-badge {
+        background: rgba(74, 222, 128, 0.2);
+        color: var(--nature);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: var(--text-dim);
+      }
+      .empty-state .big {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+      }
+      .empty-state p {
+        font-size: 0.9rem;
+      }
+
+      /* ── FAB ── */
+      .fab {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: var(--accent);
+        border: none;
+        color: #fff;
+        font-size: 1.5rem;
+        cursor: pointer;
+        z-index: 99;
+        box-shadow: 0 6px 24px rgba(108, 99, 255, 0.5);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .fab:hover {
+        transform: scale(1.08);
+        box-shadow: 0 8px 32px rgba(108, 99, 255, 0.7);
+      }
+
+      /* ── MODAL ── */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(6px);
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal {
+        background: var(--surface);
+        border-radius: 24px 24px 0 0;
+        padding: 24px 20px 40px;
+        width: 100%;
+        max-width: 560px;
+        max-height: 92vh;
+        overflow-y: auto;
+        animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      @keyframes slideUp {
+        from {
+          transform: translateY(100%);
+        }
+        to {
+          transform: none;
+        }
+      }
+      .modal-handle {
+        width: 40px;
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        margin: 0 auto 20px;
+      }
+      .modal-title {
+        font-family: "Syne", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 18px;
+      }
+      .form-row {
+        margin-bottom: 14px;
+      }
+      label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 800;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+        margin-bottom: 6px;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        background: var(--surface2);
+        border: 1.5px solid var(--border);
+        color: var(--text);
+        font-family: "Nunito", sans-serif;
+        font-size: 0.9rem;
+        padding: 10px 14px;
+        border-radius: 10px;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--accent);
+      }
+      select option {
+        background: var(--surface2);
+      }
+      textarea {
+        resize: vertical;
+        min-height: 70px;
+      }
+      .form-row-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .cat-picker {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .cat-pick-btn {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        border: 2px solid var(--border);
+        cursor: pointer;
+        transition: all 0.2s;
+        background: var(--surface2);
+        color: var(--text-dim);
+      }
+      .cat-pick-btn.sel-deep {
+        border-color: var(--deep-work);
+        background: rgba(46, 196, 182, 0.2);
+        color: var(--deep-work);
+      }
+      .cat-pick-btn.sel-exercise {
+        border-color: var(--exercise);
+        background: rgba(255, 107, 107, 0.2);
+        color: var(--exercise);
+      }
+      .cat-pick-btn.sel-admin {
+        border-color: var(--admin);
+        background: rgba(255, 230, 109, 0.2);
+        color: var(--admin);
+      }
+      .cat-pick-btn.sel-rest {
+        border-color: var(--rest);
+        background: rgba(167, 139, 250, 0.2);
+        color: var(--rest);
+      }
+      .cat-pick-btn.sel-family {
+        border-color: var(--family);
+        background: rgba(249, 115, 22, 0.2);
+        color: var(--family);
+      }
+      .cat-pick-btn.sel-nature {
+        border-color: var(--nature);
+        background: rgba(74, 222, 128, 0.2);
+        color: var(--nature);
+      }
+      .btn-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .btn {
+        flex: 1;
+        padding: 13px;
+        border-radius: 12px;
+        font-family: "Nunito", sans-serif;
+        font-size: 0.9rem;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #5a52e0;
+      }
+      .btn-ghost {
+        background: var(--surface2);
+        color: var(--text-dim);
+      }
+      .btn-ghost:hover {
+        color: var(--text);
+      }
+
+      /* ── TEMPLATE MODAL ── */
+      .template-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .template-card {
+        background: var(--surface2);
+        border: 2px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+      }
+      .template-card:hover {
+        border-color: var(--accent);
+        background: rgba(108, 99, 255, 0.1);
+      }
+      .template-card .t-icon {
+        font-size: 2rem;
+        margin-bottom: 8px;
+      }
+      .template-card .t-name {
+        font-weight: 800;
+        font-size: 0.9rem;
+      }
+      .template-card .t-desc {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        margin-top: 4px;
+      }
+
+      /* ── WEEK PAGE ── */
+      .week-grid {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+      }
+      .week-day-col {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 8px 6px;
+        min-height: 200px;
+      }
+      .week-day-name {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-align: center;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+      .week-day-date {
+        font-size: 0.85rem;
+        font-weight: 800;
+        text-align: center;
+        margin-bottom: 8px;
+      }
+      .week-day-col.today {
+        border-color: var(--accent);
+        background: rgba(108, 99, 255, 0.08);
+      }
+      .week-block-mini {
+        border-radius: 6px;
+        padding: 3px 6px;
+        margin-bottom: 3px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .week-score {
+        text-align: center;
+        margin-top: 6px;
+        font-size: 0.7rem;
+        font-weight: 800;
+      }
+      .week-score span {
+        color: var(--nature);
+      }
+      .week-header {
+        padding: 20px 20px 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .week-nav {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .week-nav button {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 6px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: background 0.2s;
+      }
+      .week-nav button:hover {
+        background: var(--border);
+      }
+      .week-legend {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        padding: 10px 20px 0;
+      }
+      .week-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: var(--text-dim);
+      }
+      .week-legend-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+      }
+      /* score bar week */
+      .week-wins {
+        padding: 12px 20px 0;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .win-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        flex: 1;
+        min-width: 100px;
+      }
+      .win-card-label {
+        font-size: 0.65rem;
+        font-weight: 800;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+      }
+      .win-card-val {
+        font-family: "Syne", sans-serif;
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--accent);
+      }
+
+      /* ── TECHNIQUES PAGE ── */
+      .tech-hero {
+        padding: 24px 20px 16px;
+      }
+      .tech-hero h1 {
+        font-family: "Syne", sans-serif;
+        font-size: 1.6rem;
+        font-weight: 800;
+        line-height: 1.2;
+      }
+      .tech-hero h1 span {
+        color: var(--accent);
+      }
+      .tech-hero p {
+        color: var(--text-dim);
+        font-size: 0.85rem;
+        margin-top: 8px;
+      }
+      .tech-grid {
+        padding: 0 20px 100px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .tech-card {
+        background: var(--surface);
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.25s;
+        position: relative;
+        overflow: hidden;
+      }
+      .tech-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transition: opacity 0.25s;
+      }
+      .tech-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      }
+      .tech-card:hover::before {
+        opacity: 1;
+      }
+      .tech-card-icon {
+        font-size: 1.6rem;
+        margin-bottom: 8px;
+      }
+      .tech-card-name {
+        font-size: 0.85rem;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+      .tech-card-desc {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        line-height: 1.5;
+      }
+      .tech-card-expand {
+        display: none;
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        line-height: 1.6;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+      }
+      .tech-card.expanded .tech-card-expand {
+        display: block;
+      }
+      .tech-card-tag {
+        display: inline-block;
+        font-size: 0.6rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+
+      /* Tech card accent colors */
+      .tc-1 {
+        border-color: rgba(46, 196, 182, 0.3);
+      }
+      .tc-1:hover {
+        border-color: var(--deep-work);
+      }
+      .tc-1 .tech-card-tag {
+        background: rgba(46, 196, 182, 0.2);
+        color: var(--deep-work);
+      }
+      .tc-2 {
+        border-color: rgba(108, 99, 255, 0.3);
+      }
+      .tc-2:hover {
+        border-color: var(--accent);
+      }
+      .tc-2 .tech-card-tag {
+        background: rgba(108, 99, 255, 0.2);
+        color: var(--accent);
+      }
+      .tc-3 {
+        border-color: rgba(255, 230, 109, 0.3);
+      }
+      .tc-3:hover {
+        border-color: var(--admin);
+      }
+      .tc-3 .tech-card-tag {
+        background: rgba(255, 230, 109, 0.15);
+        color: var(--admin);
+      }
+      .tc-4 {
+        border-color: rgba(255, 107, 107, 0.3);
+      }
+      .tc-4:hover {
+        border-color: var(--exercise);
+      }
+      .tc-4 .tech-card-tag {
+        background: rgba(255, 107, 107, 0.2);
+        color: var(--exercise);
+      }
+      .tc-5 {
+        border-color: rgba(167, 139, 250, 0.3);
+      }
+      .tc-5:hover {
+        border-color: var(--rest);
+      }
+      .tc-5 .tech-card-tag {
+        background: rgba(167, 139, 250, 0.2);
+        color: var(--rest);
+      }
+      .tc-6 {
+        border-color: rgba(249, 115, 22, 0.3);
+      }
+      .tc-6:hover {
+        border-color: var(--family);
+      }
+      .tc-6 .tech-card-tag {
+        background: rgba(249, 115, 22, 0.2);
+        color: var(--family);
+      }
+
+      /* ── EXPORT/IMPORT ── */
+      .data-actions {
+        display: flex;
+        gap: 10px;
+        padding: 0 20px 16px;
+        flex-wrap: wrap;
+      }
+      .act-btn {
+        background: var(--surface2);
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+        font-family: "Nunito", sans-serif;
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 8px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .act-btn:hover {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+
+      .section-title {
+        font-family: "Syne", sans-serif;
+        font-size: 0.85rem;
+        font-weight: 800;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 16px 20px 8px;
+      }
+
+      /* toast */
+      .toast {
+        position: fixed;
+        bottom: 90px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        opacity: 0;
+        transition: all 0.3s;
+        z-index: 300;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      /* scrollbar */
+      ::-webkit-scrollbar {
+        width: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+
+      @media (min-width: 600px) {
+        .today-header {
+          padding: 24px 28px 0;
+        }
+        .score-bar {
+          margin: 16px 28px;
+        }
+        .timeline-wrap,
+        .tech-grid,
+        .week-grid,
+        .data-actions,
+        .section-title,
+        .week-header,
+        .week-legend,
+        .week-wins,
+        .tech-hero {
+          padding-left: 28px;
+          padding-right: 28px;
+        }
+        .modal {
+          border-radius: 24px;
+          margin-bottom: 20px;
+        }
+        .modal-overlay {
+          align-items: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav>
+      <div class="nav-logo">Time<span>Block</span></div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="showPage('today')">
+          Today
+        </button>
+        <button class="nav-tab" onclick="showPage('week')">Week</button>
+        <button class="nav-tab" onclick="showPage('techniques')">
+          Techniques
+        </button>
+      </div>
+    </nav>
+
+    <!-- ── TODAY PAGE ── -->
+    <div class="page active" id="page-today">
+      <div class="today-header">
+        <div>
+          <div class="today-title" id="today-date-label">Loading...</div>
+          <div
+            style="font-size: 0.78rem; color: var(--text-dim); margin-top: 2px"
+            id="today-day-label"
+          ></div>
+        </div>
+        <div
+          style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"
+        >
+          <div class="day-type-pills">
+            <div
+              class="day-pill work"
+              id="pill-work"
+              onclick="setDayType('work')"
+            >
+              💼 Work Day
+            </div>
+            <div
+              class="day-pill home"
+              id="pill-home"
+              onclick="setDayType('home')"
+            >
+              🏠 Home Day
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Score bar -->
+      <div class="score-bar">
+        <div class="score-label">Daily Win?</div>
+        <div class="score-goals">
+          <div class="score-goal" id="goal-money" onclick="toggleGoal('money')">
+            <span class="score-dot"></span> Money
+          </div>
+          <div
+            class="score-goal"
+            id="goal-strength"
+            onclick="toggleGoal('strength')"
+          >
+            <span class="score-dot"></span> Strength
+          </div>
+          <div
+            class="score-goal"
+            id="goal-mastery"
+            onclick="toggleGoal('mastery')"
+          >
+            <span class="score-dot"></span> Mastery
+          </div>
+        </div>
+        <div class="score-num" id="score-display">0 <span>/ 3</span></div>
+      </div>
+
+      <div class="data-actions">
+        <button class="act-btn" onclick="openTemplateModal()">
+          📋 Load Template
+        </button>
+        <button class="act-btn" onclick="exportJSON()">⬇️ Export</button>
+        <button
+          class="act-btn"
+          onclick="document.getElementById('importInput').click()"
+        >
+          ⬆️ Import
+        </button>
+        <input
+          type="file"
+          id="importInput"
+          accept=".json"
+          style="display: none"
+          onchange="importJSON(event)"
+        />
+        <button
+          class="act-btn"
+          onclick="clearToday()"
+          style="color: #ff6b6b; border-color: rgba(255, 107, 107, 0.3)"
+        >
+          🗑️ Clear
+        </button>
+      </div>
+
+      <div class="section-title">Today's Schedule</div>
+      <div class="timeline-wrap">
+        <div class="timeline" id="timeline">
+          <div class="empty-state" id="empty-msg">
+            <div class="big">🗓️</div>
+            <p>
+              No blocks yet.<br />Tap <strong>+</strong> to add your first
+              block<br />or load a template.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WEEK PAGE ── -->
+    <div class="page" id="page-week">
+      <div class="week-header">
+        <div
+          class="today-title"
+          style="font-family: &quot;Syne&quot;, sans-serif; font-size: 1.2rem"
+        >
+          Weekly Overview
+        </div>
+        <div class="week-nav">
+          <button onclick="changeWeek(-1)">◀</button>
+          <span
+            id="week-range-label"
+            style="font-size: 0.78rem; font-weight: 700; color: var(--text-dim)"
+          ></span>
+          <button onclick="changeWeek(1)">▶</button>
+        </div>
+      </div>
+      <div class="week-wins">
+        <div class="win-card">
+          <div class="win-card-label">Blocks Today</div>
+          <div class="win-card-val" id="wc-blocks">0</div>
+        </div>
+        <div class="win-card">
+          <div class="win-card-label">Goals Hit</div>
+          <div class="win-card-val" id="wc-goals">0/3</div>
+        </div>
+        <div class="win-card">
+          <div class="win-card-label">Deep Work Hrs</div>
+          <div class="win-card-val" id="wc-deep">0h</div>
+        </div>
+      </div>
+      <div class="week-legend">
+        <div class="week-legend-item">
+          <div
+            class="week-legend-dot"
+            style="background: var(--deep-work)"
+          ></div>
+          Deep Work
+        </div>
+        <div class="week-legend-item">
+          <div
+            class="week-legend-dot"
+            style="background: var(--exercise)"
+          ></div>
+          Exercise
+        </div>
+        <div class="week-legend-item">
+          <div class="week-legend-dot" style="background: var(--admin)"></div>
+          Admin
+        </div>
+        <div class="week-legend-item">
+          <div class="week-legend-dot" style="background: var(--rest)"></div>
+          Rest
+        </div>
+        <div class="week-legend-item">
+          <div class="week-legend-dot" style="background: var(--family)"></div>
+          Family
+        </div>
+        <div class="week-legend-item">
+          <div class="week-legend-dot" style="background: var(--nature)"></div>
+          Nature
+        </div>
+      </div>
+      <div class="week-grid" id="week-grid"></div>
+    </div>
+
+    <!-- ── TECHNIQUES PAGE ── -->
+    <div class="page" id="page-techniques">
+      <div class="tech-hero">
+        <h1>Master Your <span>Time</span> 🚀</h1>
+        <p>15 proven techniques. Tap any card to learn how to apply it.</p>
+      </div>
+      <div class="tech-grid" id="tech-grid"></div>
+    </div>
+
+    <!-- FAB -->
+    <button class="fab" onclick="openAddModal()" title="Add block">+</button>
+    <div class="toast" id="toast"></div>
+
+    <!-- ── ADD BLOCK MODAL ── -->
+    <div class="modal-overlay" id="add-modal">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Add Time Block</div>
+        <div class="form-row">
+          <label>Category</label>
+          <div class="cat-picker" id="cat-picker">
+            <div
+              class="cat-pick-btn"
+              data-cat="deep"
+              onclick="selectCat(this, 'deep')"
+            >
+              🧠 Deep Work
+            </div>
+            <div
+              class="cat-pick-btn"
+              data-cat="exercise"
+              onclick="selectCat(this, 'exercise')"
+            >
+              💪 Exercise
+            </div>
+            <div
+              class="cat-pick-btn"
+              data-cat="admin"
+              onclick="selectCat(this, 'admin')"
+            >
+              📋 Admin
+            </div>
+            <div
+              class="cat-pick-btn"
+              data-cat="rest"
+              onclick="selectCat(this, 'rest')"
+            >
+              😴 Rest
+            </div>
+            <div
+              class="cat-pick-btn"
+              data-cat="family"
+              onclick="selectCat(this, 'family')"
+            >
+              👨‍👩‍👧 Family
+            </div>
+            <div
+              class="cat-pick-btn"
+              data-cat="nature"
+              onclick="selectCat(this, 'nature')"
+            >
+              🌿 Nature
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Block Title</label>
+          <input
+            type="text"
+            id="block-title"
+            placeholder="e.g. Deep Work Block #1, Gym, Lunch…"
+          />
+        </div>
+        <div class="form-row-2">
+          <div class="form-row" style="margin: 0">
+            <label>Start Time</label>
+            <input type="time" id="block-start" value="09:00" />
+          </div>
+          <div class="form-row" style="margin: 0">
+            <label>End Time</label>
+            <input type="time" id="block-end" value="11:00" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Notes / Tasks (optional)</label>
+          <textarea
+            id="block-notes"
+            placeholder="e.g. 2 chapters mastered, 5 past paper questions…"
+          ></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="closeModal('add-modal')">
+            Cancel
+          </button>
+          <button class="btn btn-primary" onclick="saveBlock()">
+            Add Block ✓
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TEMPLATE MODAL ── -->
+    <div class="modal-overlay" id="template-modal">
+      <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="modal-title">Load a Template</div>
+        <p
+          style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 14px"
+        >
+          This will replace today's current blocks.
+        </p>
+        <div class="template-grid">
+          <div class="template-card" onclick="loadTemplate('work')">
+            <div class="t-icon">💼</div>
+            <div class="t-name">Work Day</div>
+            <div class="t-desc">
+              Deep work sessions, admin, exercise & wind-down
+            </div>
+          </div>
+          <div class="template-card" onclick="loadTemplate('home')">
+            <div class="t-icon">🏠</div>
+            <div class="t-name">Home Day</div>
+            <div class="t-desc">
+              Flexible learning, nature, family & rest blocks
+            </div>
+          </div>
+          <div class="template-card" onclick="loadTemplate('deep')">
+            <div class="t-icon">🧠</div>
+            <div class="t-name">Deep Focus Day</div>
+            <div class="t-desc">
+              Maximum focus — inspired by Cal Newport's routine
+            </div>
+          </div>
+          <div class="template-card" onclick="loadTemplate('recovery')">
+            <div class="t-icon">🌿</div>
+            <div class="t-name">Recovery Day</div>
+            <div class="t-desc">Rest, nature, light movement & family time</div>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top: 16px">
+          <button class="btn btn-ghost" onclick="closeModal('template-modal')">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /* ===================== DATA ===================== */
+      const CAT_COLORS = {
+        deep: "#2EC4B6",
+        exercise: "#FF6B6B",
+        admin: "#FFE66D",
+        rest: "#A78BFA",
+        family: "#F97316",
+        nature: "#4ADE80",
+      };
+      const CAT_LABELS = {
+        deep: "🧠 Deep Work",
+        exercise: "💪 Exercise",
+        admin: "📋 Admin",
+        rest: "😴 Rest",
+        family: "👨‍👩‍👧 Family",
+        nature: "🌿 Nature",
+      };
+
+      function todayKey() {
+        const d = new Date();
+        return `tb_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+      }
+      function dateKey(d) {
+        return `tb_${d.getFullYear()}_${d.getMonth()}_${d.getDate()}`;
+      }
+
+      function loadState() {
+        try {
+          return (
+            JSON.parse(localStorage.getItem(todayKey())) || {
+              blocks: [],
+              dayType: null,
+              goals: {},
+            }
+          );
+        } catch {
+          return { blocks: [], dayType: null, goals: {} };
+        }
+      }
+      function saveState(s) {
+        localStorage.setItem(todayKey(), JSON.stringify(s));
+      }
+      function loadDateState(d) {
+        try {
+          return (
+            JSON.parse(localStorage.getItem(dateKey(d))) || {
+              blocks: [],
+              dayType: null,
+              goals: {},
+            }
+          );
+        } catch {
+          return { blocks: [], dayType: null, goals: {} };
+        }
+      }
+
+      let state = loadState();
+
+      /* ===================== RENDER ===================== */
+      function renderTimeline() {
+        const tl = document.getElementById("timeline");
+        const em = document.getElementById("empty-msg");
+        const blocks = [...state.blocks].sort((a, b) =>
+          a.start.localeCompare(b.start),
+        );
+        tl.innerHTML = "";
+        if (!blocks.length) {
+          tl.appendChild(em || createEmptyMsg());
+          em && (em.style.display = "");
+          return;
+        }
+        blocks.forEach((b, i) => {
+          const dur = calcDur(b.start, b.end);
+          const el = document.createElement("div");
+          el.className = "time-block";
+          el.innerHTML = `
+      <div class="time-label">${fmtTime(b.start)}<br>${fmtTime(b.end)}</div>
+      <div class="time-dot"></div>
+      <div class="block-card cat-${b.cat}">
+        <button class="block-delete" onclick="deleteBlock(${b.id})">×</button>
+        <div class="block-top">
+          <div class="block-cat-badge">${CAT_LABELS[b.cat]}</div>
+          <div class="block-dur">${dur}</div>
+        </div>
+        <div class="block-title">${b.title}</div>
+        ${b.notes ? `<div class="block-notes">${b.notes}</div>` : ""}
+      </div>`;
+          tl.appendChild(el);
+        });
+      }
+      function createEmptyMsg() {
+        const d = document.createElement("div");
+        d.id = "empty-msg";
+        d.className = "empty-state";
+        d.innerHTML = `<div class="big">🗓️</div><p>No blocks yet.<br>Tap <strong>+</strong> to add your first block<br>or load a template.</p>`;
+        return d;
+      }
+      function fmtTime(t) {
+        const [h, m] = t.split(":").map(Number);
+        const ampm = h >= 12 ? "PM" : "AM";
+        const hh = h % 12 || 12;
+        return `${hh}:${String(m).padStart(2, "0")}<br>${ampm}`;
+      }
+      function calcDur(s, e) {
+        const [sh, sm] = s.split(":").map(Number);
+        const [eh, em] = e.split(":").map(Number);
+        const mins = eh * 60 + em - (sh * 60 + sm);
+        if (mins <= 0) return "—";
+        const h = Math.floor(mins / 60),
+          m = mins % 60;
+        return h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+      }
+
+      function renderGoals() {
+        ["money", "strength", "mastery"].forEach((g) => {
+          const el = document.getElementById(`goal-${g}`);
+          if (state.goals[g]) el.classList.add("done");
+          else el.classList.remove("done");
+        });
+        const count = Object.values(state.goals).filter(Boolean).length;
+        document.getElementById("score-display").innerHTML =
+          `${count} <span>/ 3</span>`;
+      }
+
+      function renderDayPills() {
+        document
+          .getElementById("pill-work")
+          .classList.toggle("active", state.dayType === "work");
+        document
+          .getElementById("pill-home")
+          .classList.toggle("active", state.dayType === "home");
+      }
+
+      /* ===================== ACTIONS ===================== */
+      let selectedCat = "deep";
+
+      function selectCat(el, cat) {
+        document
+          .querySelectorAll(".cat-pick-btn")
+          .forEach((b) => (b.className = "cat-pick-btn"));
+        el.classList.add(`sel-${cat}`);
+        selectedCat = cat;
+      }
+
+      function openAddModal() {
+        document.getElementById("add-modal").classList.add("open");
+        // Reset
+        document.getElementById("block-title").value = "";
+        document.getElementById("block-notes").value = "";
+        document
+          .querySelectorAll(".cat-pick-btn")
+          .forEach((b) => (b.className = "cat-pick-btn"));
+        document.querySelector('[data-cat="deep"]').classList.add("sel-deep");
+        selectedCat = "deep";
+      }
+
+      function saveBlock() {
+        const title = document.getElementById("block-title").value.trim();
+        const start = document.getElementById("block-start").value;
+        const end = document.getElementById("block-end").value;
+        const notes = document.getElementById("block-notes").value.trim();
+        if (!title) {
+          document.getElementById("block-title").focus();
+          return;
+        }
+        const block = {
+          id: Date.now(),
+          cat: selectedCat,
+          title,
+          start,
+          end,
+          notes,
+        };
+        state.blocks.push(block);
+        saveState(state);
+        renderTimeline();
+        closeModal("add-modal");
+        showToast("Block added ✓");
+        updateWeekStats();
+      }
+
+      function deleteBlock(id) {
+        state.blocks = state.blocks.filter((b) => b.id !== id);
+        saveState(state);
+        renderTimeline();
+        updateWeekStats();
+      }
+
+      function clearToday() {
+        if (!confirm("Clear all blocks for today?")) return;
+        state.blocks = [];
+        state.goals = {};
+        saveState(state);
+        renderTimeline();
+        renderGoals();
+        showToast("Day cleared");
+      }
+
+      function setDayType(t) {
+        state.dayType = state.dayType === t ? null : t;
+        saveState(state);
+        renderDayPills();
+      }
+
+      function toggleGoal(g) {
+        state.goals[g] = !state.goals[g];
+        saveState(state);
+        renderGoals();
+        updateWeekStats();
+      }
+
+      function closeModal(id) {
+        document.getElementById(id).classList.remove("open");
+      }
+
+      /* ── TEMPLATES ── */
+      const TEMPLATES = {
+        work: [
+          {
+            cat: "rest",
+            title: "Morning Routine",
+            start: "06:30",
+            end: "08:00",
+            notes: "Wake up · Gym · Shower · Breakfast",
+          },
+          {
+            cat: "rest",
+            title: "Meditation & Planning",
+            start: "08:00",
+            end: "08:30",
+            notes: "Plan the day · Set top 3 priorities",
+          },
+          {
+            cat: "deep",
+            title: "Deep Work Block #1",
+            start: "09:00",
+            end: "12:00",
+            notes: "Most important work — no interruptions",
+          },
+          {
+            cat: "rest",
+            title: "Lunch",
+            start: "12:00",
+            end: "13:00",
+            notes: "Eat · Short walk",
+          },
+          {
+            cat: "deep",
+            title: "Deep Work Block #2",
+            start: "13:00",
+            end: "16:00",
+            notes: "Second focus session · reply emails at end",
+          },
+          {
+            cat: "admin",
+            title: "Admin & Emails",
+            start: "16:00",
+            end: "17:00",
+            notes: "Check messages · plan tomorrow",
+          },
+          {
+            cat: "exercise",
+            title: "Physical Training",
+            start: "17:00",
+            end: "18:30",
+            notes: "Gym / run · Shower · Protein",
+          },
+          {
+            cat: "family",
+            title: "Family / Dinner Time",
+            start: "18:30",
+            end: "20:00",
+            notes: "Dinner · quality time",
+          },
+          {
+            cat: "rest",
+            title: "Wind Down & Read",
+            start: "20:00",
+            end: "22:00",
+            notes: "No screens · Read · Journal",
+          },
+        ],
+        home: [
+          {
+            cat: "rest",
+            title: "Slow Morning",
+            start: "07:00",
+            end: "08:30",
+            notes: "No alarm · Stretch · Breakfast",
+          },
+          {
+            cat: "nature",
+            title: "Morning Walk / Nature",
+            start: "08:30",
+            end: "09:30",
+            notes: "Fresh air · no phone",
+          },
+          {
+            cat: "deep",
+            title: "Learning Block",
+            start: "10:00",
+            end: "12:00",
+            notes: "Personal project · study · course",
+          },
+          {
+            cat: "admin",
+            title: "Errands & Admin",
+            start: "12:00",
+            end: "13:30",
+            notes: "Groceries · calls · banking",
+          },
+          {
+            cat: "family",
+            title: "Family Time / Lunch",
+            start: "13:30",
+            end: "15:00",
+            notes: "Cook together · eat well",
+          },
+          {
+            cat: "exercise",
+            title: "Exercise",
+            start: "15:00",
+            end: "16:30",
+            notes: "Workout · stretch · shower",
+          },
+          {
+            cat: "nature",
+            title: "Afternoon Outdoors",
+            start: "16:30",
+            end: "18:00",
+            notes: "Park · garden · sunset",
+          },
+          {
+            cat: "rest",
+            title: "Rest & Read",
+            start: "20:00",
+            end: "22:00",
+            notes: "No pressure · book · relax",
+          },
+        ],
+        deep: [
+          {
+            cat: "rest",
+            title: "Early Rise & Prepare",
+            start: "06:00",
+            end: "07:00",
+            notes: "No socials · eat light · plan top 1 task",
+          },
+          {
+            cat: "deep",
+            title: "Deep Work Block #1",
+            start: "07:00",
+            end: "10:00",
+            notes: "3 hrs — academics / most important project",
+          },
+          {
+            cat: "rest",
+            title: "Break + Smoothie",
+            start: "10:00",
+            end: "10:30",
+            notes: "Walk outside · no screens",
+          },
+          {
+            cat: "deep",
+            title: "Deep Work Block #2",
+            start: "10:30",
+            end: "13:00",
+            notes: "Continue or switch to second priority",
+          },
+          {
+            cat: "rest",
+            title: "Lunch",
+            start: "13:00",
+            end: "14:00",
+            notes: "Real food · 20-min walk",
+          },
+          {
+            cat: "deep",
+            title: "Deep Work Block #3",
+            start: "14:00",
+            end: "17:00",
+            notes: "Income / insight-focused work",
+          },
+          {
+            cat: "exercise",
+            title: "Training",
+            start: "17:00",
+            end: "18:30",
+            notes: "Gym · decompression",
+          },
+          {
+            cat: "rest",
+            title: "Plan Tomorrow",
+            start: "21:00",
+            end: "21:30",
+            notes: "Shutdown ritual · write tomorrow's top task",
+          },
+        ],
+        recovery: [
+          {
+            cat: "rest",
+            title: "Sleep In",
+            start: "08:00",
+            end: "09:00",
+            notes: "No alarm",
+          },
+          {
+            cat: "rest",
+            title: "Slow Breakfast",
+            start: "09:00",
+            end: "09:45",
+            notes: "Eat well · no rush",
+          },
+          {
+            cat: "nature",
+            title: "Morning Nature Walk",
+            start: "10:00",
+            end: "11:30",
+            notes: "Park / beach / garden — phone off",
+          },
+          {
+            cat: "family",
+            title: "Family Lunch",
+            start: "12:30",
+            end: "14:00",
+            notes: "Cook together · laugh",
+          },
+          {
+            cat: "exercise",
+            title: "Light Movement",
+            start: "14:30",
+            end: "15:30",
+            notes: "Yoga / light jog / stretch",
+          },
+          {
+            cat: "nature",
+            title: "Afternoon Outdoors",
+            start: "16:00",
+            end: "18:00",
+            notes: "Sunset · breathe · reset",
+          },
+          {
+            cat: "rest",
+            title: "Read & Reflect",
+            start: "20:00",
+            end: "22:00",
+            notes: "Book · gratitude journal",
+          },
+        ],
+      };
+
+      function openTemplateModal() {
+        document.getElementById("template-modal").classList.add("open");
+      }
+      function loadTemplate(key) {
+        state.blocks = TEMPLATES[key].map((b, i) => ({
+          ...b,
+          id: Date.now() + i,
+        }));
+        state.dayType = key === "work" || key === "deep" ? "work" : "home";
+        saveState(state);
+        renderTimeline();
+        renderDayPills();
+        closeModal("template-modal");
+        showToast("Template loaded ✓");
+        updateWeekStats();
+      }
+
+      /* ── EXPORT / IMPORT ── */
+      function exportJSON() {
+        const data = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k.startsWith("tb_"))
+            data[k] = JSON.parse(localStorage.getItem(k));
+        }
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: "application/json",
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `timeblock-export-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        showToast("Exported ✓");
+      }
+      function importJSON(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const data = JSON.parse(ev.target.result);
+            Object.entries(data).forEach(([k, v]) =>
+              localStorage.setItem(k, JSON.stringify(v)),
+            );
+            state = loadState();
+            renderTimeline();
+            renderGoals();
+            renderDayPills();
+            renderWeek();
+            updateWeekStats();
+            showToast("Imported ✓");
+          } catch {
+            showToast("Import failed ✗");
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = "";
+      }
+
+      /* ===================== WEEK ===================== */
+      let weekOffset = 0;
+      function getWeekDates(offset = 0) {
+        const today = new Date();
+        const day = today.getDay(); // 0=Sun
+        const monday = new Date(today);
+        monday.setDate(today.getDate() - ((day + 6) % 7) + offset * 7);
+        return Array.from({ length: 7 }, (_, i) => {
+          const d = new Date(monday);
+          d.setDate(monday.getDate() + i);
+          return d;
+        });
+      }
+      const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+      function renderWeek() {
+        const dates = getWeekDates(weekOffset);
+        const grid = document.getElementById("week-grid");
+        grid.innerHTML = "";
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const rangeLabel = `${dates[0].toLocaleDateString("en", { day: "numeric", month: "short" })} – ${dates[6].toLocaleDateString("en", { day: "numeric", month: "short" })}`;
+        document.getElementById("week-range-label").textContent = rangeLabel;
+        dates.forEach((d, i) => {
+          const s = loadDateState(d);
+          const isToday = d.toDateString() === today.toDateString();
+          const col = document.createElement("div");
+          col.className = "week-day-col" + (isToday ? " today" : "");
+          const blocks = [...s.blocks].sort((a, b) =>
+            a.start.localeCompare(b.start),
+          );
+          const goalsCount = Object.values(s.goals || {}).filter(
+            Boolean,
+          ).length;
+          col.innerHTML = `<div class="week-day-name">${DAY_NAMES[i]}</div><div class="week-day-date">${d.getDate()}</div>`;
+          blocks.slice(0, 6).forEach((b) => {
+            const mini = document.createElement("div");
+            mini.className = "week-block-mini";
+            mini.style.background = CAT_COLORS[b.cat] + "33";
+            mini.style.color = CAT_COLORS[b.cat];
+            mini.textContent = b.title;
+            col.appendChild(mini);
+          });
+          if (blocks.length > 6) {
+            const more = document.createElement("div");
+            more.style.cssText =
+              "font-size:0.6rem;color:var(--text-dim);text-align:center;padding:2px;";
+            more.textContent = `+${blocks.length - 6} more`;
+            col.appendChild(more);
+          }
+          if (goalsCount > 0) {
+            const sc = document.createElement("div");
+            sc.className = "week-score";
+            sc.innerHTML = `<span>${goalsCount}/3</span> 🏆`;
+            col.appendChild(sc);
+          }
+          grid.appendChild(col);
+        });
+      }
+      function changeWeek(dir) {
+        weekOffset += dir;
+        renderWeek();
+      }
+      function updateWeekStats() {
+        const s = loadState();
+        document.getElementById("wc-blocks").textContent = s.blocks.length;
+        const goals = Object.values(s.goals || {}).filter(Boolean).length;
+        document.getElementById("wc-goals").textContent = `${goals}/3`;
+        const deepMins = s.blocks
+          .filter((b) => b.cat === "deep")
+          .reduce((acc, b) => {
+            const [sh, sm] = b.start.split(":").map(Number);
+            const [eh, em] = b.end.split(":").map(Number);
+            return acc + Math.max(0, eh * 60 + em - (sh * 60 + sm));
+          }, 0);
+        document.getElementById("wc-deep").textContent =
+          `${(deepMins / 60).toFixed(1)}h`;
+      }
+
+      /* ===================== TECHNIQUES ===================== */
+      const TECHNIQUES = [
+        {
+          icon: "🍅",
+          name: "Pomodoro Technique",
+          tag: "Focus",
+          color: 1,
+          desc: "Work in 25-min sprints, break 5 min. After 4 cycles, rest 15–30 min.",
+          detail:
+            "Best for tasks you tend to procrastinate. Set a timer, work until it rings, then step away completely. The urgency of the timer combats distraction.",
+        },
+        {
+          icon: "⬛",
+          name: "Eisenhower Matrix",
+          tag: "Prioritize",
+          color: 2,
+          desc: "Sort tasks by Urgent vs Important into 4 quadrants: Do, Decide, Delegate, Delete.",
+          detail:
+            "Urgent+Important → Do now. Important+Not Urgent → Schedule. Urgent+Not Important → Delegate. Neither → Delete. Most people live in the urgent but not important quadrant.",
+        },
+        {
+          icon: "🎯",
+          name: "Warren Buffett's 5/25 Rule",
+          tag: "Goals",
+          color: 3,
+          desc: "List 25 goals. Pick top 5. Actively AVOID the other 20.",
+          detail:
+            'The 20 you didn\'t pick are not your "B-list" — they are your biggest distraction. The discipline is in saying no to good things so you can say yes to the best.',
+        },
+        {
+          icon: "⚡",
+          name: "2-Minute Rule",
+          tag: "Anti-Procrastination",
+          color: 4,
+          desc: "If a task takes less than 2 minutes — do it now, not later.",
+          detail:
+            "From David Allen's GTD system. The overhead of scheduling, remembering, and reopening a 2-min task costs more than just doing it. Clear the small stuff instantly.",
+        },
+        {
+          icon: "🔤",
+          name: "ABCDE Method",
+          tag: "Prioritize",
+          color: 5,
+          desc: "A = Must Do · B = Important · C = Nice To Do · D = Delegate · E = Eliminate.",
+          detail:
+            "Assign a letter to every task before starting. Never work on a B while an A is undone. This forces ruthless honesty about what actually matters today.",
+        },
+        {
+          icon: "3️⃣",
+          name: "3-3-3 Method",
+          tag: "Structure",
+          color: 6,
+          desc: "3 hours deep work + 3 medium tasks + 3 small tasks per day.",
+          detail:
+            "Prevents the trap of filling your day with easy small tasks. The 3-hour deep block is protected time — no meetings, no email. Schedule it first thing.",
+        },
+        {
+          icon: "🗓️",
+          name: "Time Blocking",
+          tag: "Schedule",
+          color: 1,
+          desc: "Allocate specific time slots for different tasks to maintain focus.",
+          detail:
+            "Every minute of your day is pre-decided. When the block ends, you stop — even if unfinished. This creates artificial urgency and prevents tasks from expanding.",
+        },
+        {
+          icon: "🧠",
+          name: "Wiseman Method",
+          tag: "Action",
+          color: 2,
+          desc: "Use the 5-second rule: count 5-4-3-2-1, then move.",
+          detail:
+            "Hesitation is the enemy of action. The moment you feel resistance, count down and physically move. The counting interrupts your brain's habit of overthinking.",
+        },
+        {
+          icon: "🐸",
+          name: "Eat That Frog",
+          tag: "Priority",
+          color: 3,
+          desc: "Tackle your most challenging task first — before anything else.",
+          detail:
+            'From Brian Tracy. The "frog" is the task you\'re most likely to procrastinate. Do it at peak energy (morning) and the rest of the day feels downhill.',
+        },
+        {
+          icon: "5️⃣",
+          name: "5/5 Rule",
+          tag: "Perspective",
+          color: 4,
+          desc: "If it won't matter in 5 years, don't spend more than 5 minutes worrying.",
+          detail:
+            'Most daily stress is about things with zero long-term impact. Ask "Will I remember this in 5 years?" — if no, cap the emotional energy you invest at 5 minutes.',
+        },
+        {
+          icon: "📦",
+          name: "Task Batching",
+          tag: "Efficiency",
+          color: 5,
+          desc: "Group similar tasks together to reduce context-switching.",
+          detail:
+            "Checking email once vs 30 times saves hours per week. Batch all calls, all errands, all admin into single blocks. Every context switch costs 23 minutes of focus.",
+        },
+        {
+          icon: "📊",
+          name: "80/20 Rule",
+          tag: "Leverage",
+          color: 6,
+          desc: "20% of your tasks produce 80% of your results. Find those tasks.",
+          detail:
+            "The Pareto Principle applied to your day. Identify which 20% of your work drives 80% of your outcomes — then protect that work from everything else.",
+        },
+        {
+          icon: "✅",
+          name: "Getting Things Done",
+          tag: "System",
+          color: 1,
+          desc: "Capture → Clarify → Organize → Reflect → Engage.",
+          detail:
+            'By David Allen. Every task enters a trusted system (not your head). You clarify what "done" looks like, organize by context, and engage with full focus because nothing is forgotten.',
+        },
+        {
+          icon: "📅",
+          name: "Williams Method",
+          tag: "Categorize",
+          color: 2,
+          desc: "Categorize every task as Major, Medium, or Minor before scheduling.",
+          detail:
+            "Major = moves the needle. Medium = maintenance. Minor = nice-to-do. Only schedule Majors in your peak-energy blocks. Never let Minors displace Majors.",
+        },
+        {
+          icon: "🕵️",
+          name: "Time Audit",
+          tag: "Awareness",
+          color: 3,
+          desc: "Track every hour for 1 week to find and eliminate inefficiencies.",
+          detail:
+            "Most people are shocked by where their time actually goes. A week-long audit typically reveals 2–4 hours of daily waste. You cannot improve what you don't measure.",
+        },
+      ];
+
+      function renderTechniques() {
+        const grid = document.getElementById("tech-grid");
+        TECHNIQUES.forEach((t, i) => {
+          const card = document.createElement("div");
+          card.className = `tech-card tc-${t.color}`;
+          card.innerHTML = `
+      <div class="tech-card-tag">${t.tag}</div>
+      <div class="tech-card-icon">${t.icon}</div>
+      <div class="tech-card-name">${t.name}</div>
+      <div class="tech-card-desc">${t.desc}</div>
+      <div class="tech-card-expand">${t.detail}</div>`;
+          card.onclick = () => card.classList.toggle("expanded");
+          grid.appendChild(card);
+        });
+      }
+
+      /* ===================== MISC ===================== */
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2500);
+      }
+
+      function showPage(id) {
+        document
+          .querySelectorAll(".page")
+          .forEach((p) => p.classList.remove("active"));
+        document
+          .querySelectorAll(".nav-tab")
+          .forEach((t) => t.classList.remove("active"));
+        document.getElementById(`page-${id}`).classList.add("active");
+        event.target.classList.add("active");
+        if (id === "week") {
+          renderWeek();
+          updateWeekStats();
+        }
+      }
+
+      // Close modals on overlay click
+      document.querySelectorAll(".modal-overlay").forEach((o) => {
+        o.addEventListener("click", (e) => {
+          if (e.target === o) o.classList.remove("open");
+        });
+      });
+
+      /* ── DATE ── */
+      function initDate() {
+        const d = new Date();
+        const days = [
+          "Sunday",
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+        ];
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
+        document.getElementById("today-date-label").textContent =
+          `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        const hour = d.getHours();
+        const greeting =
+          hour < 12
+            ? "Good morning"
+            : hour < 17
+              ? "Good afternoon"
+              : "Good evening";
+        document.getElementById("today-day-label").textContent =
+          `${greeting} — let's build your day`;
+      }
+
+      /* ── INIT ── */
+      initDate();
+      renderTimeline();
+      renderGoals();
+      renderDayPills();
+      renderTechniques();
+    </script>
+  </body>
+</html>
